@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Downloads Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #155ab6;
+      --bg: #f4f7fb;
+      --text: #222;
+      --muted: #666;
+      --success: #2e7d32;
+      --error: #d32f2f;
+      --warning: #f9a825;
+      --deleted: #999;
+    }
+
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0; background: var(--bg); color: var(--text);
+    }
+
+    /* HEADER */
+    header {
+      background: var(--primary); color: #fff;
+      padding: 15px 30px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      position: sticky; top: 0; z-index: 100;
+    }
+    header h2 { font-size: 20px; margin: 0; }
+    header nav a {
+      color: #fff; margin-left: 20px; text-decoration: none; font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    header nav a:hover { opacity: 0.8; }
+
+    /* TITLE */
+    h1 {
+      margin: 25px auto 15px; text-align: center;
+      color: var(--primary); font-size: 26px;
+    }
+
+    /* SUMMARY CARDS */
+    .summary {
+      max-width: 1200px; margin: 0 auto 25px; padding: 0 20px;
+      display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+      gap: 15px;
+    }
+    .card {
+      background: #fff; border-radius: 12px;
+      padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .card h3 { margin: 0; font-size: 14px; color: var(--muted); }
+    .card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; }
+
+    /* FILTER BAR */
+    .filters {
+      max-width: 1200px; margin: 0 auto 15px; padding: 0 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .filters input, .filters select {
+      padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc;
+      font-size: 14px; flex: 1;
+    }
+    .filters select { max-width: 200px; }
+
+    /* CONTAINER */
+    .table-container {
+      max-width: 1200px; margin: 0 auto 40px; padding: 20px;
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 14px 12px; text-align: left;
+      border-bottom: 1px solid #eee; font-size: 14px;
+    }
+    th {
+      background: #f1f5ff; color: var(--primary);
+      font-weight: 600; font-size: 15px;
+    }
+    td.url-cell {
+      max-width: 260px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* STATUS TAGS */
+    .status {
+      padding: 5px 10px; border-radius: 20px; font-size: 12px;
+      font-weight: bold; text-transform: capitalize; display: inline-block;
+    }
+    .status.ready { background: #e6f4ea; color: var(--success); }
+    .status.error { background: #fdecea; color: var(--error); }
+    .status.deleted { background: #f0f0f0; color: var(--deleted); }
+    .status.pending { background: #fff8e1; color: var(--warning); }
+
+    /* ACTIONS */
+    .btn-action {
+      padding: 6px 14px; border-radius: 6px; font-size: 13px;
+      font-weight: 500; text-decoration: none; display: inline-block;
+      transition: 0.2s ease;
+    }
+    .btn-download { background: var(--primary); color: #fff; }
+    .btn-download:hover { background: var(--primary-dark); }
+    .btn-disabled { background: #ddd; color: #888; cursor: not-allowed; }
+
+    .center { text-align: center; padding: 20px; color: var(--muted); }
+
+    @media (max-width: 768px) {
+      th, td { font-size: 12px; padding: 10px; }
+      header h2 { font-size: 16px; }
+      h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <header>
+    <h2>Media Downloader</h2>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+    </nav>
+  </header>
+
+  <!-- DASHBOARD -->
+  <h1>📊 Downloads Dashboard</h1>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary">
+    <div class="card"><h3>Total Downloads</h3><p id="totalCount">0</p></div>
+    <div class="card"><h3>Active</h3><p id="activeCount">0</p></div>
+    <div class="card"><h3>Errors</h3><p id="errorCount">0</p></div>
+    <div class="card"><h3>Deleted</h3><p id="deletedCount">0</p></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+  <label for="searchInput" class="sr-only">Search Downloads</label>
+  <input 
+    type="text" 
+    id="searchInput" 
+    placeholder="🔍 Search by URL or Filename..." 
+    aria-label="Search Downloads"
+  >
+
+  <label for="statusFilter" class="sr-only">Filter by Status</label>
+  <select id="statusFilter" aria-label="Filter by Status">
+    <option value="all">All Status</option>
+    <option value="ready">Ready</option>
+    <option value="pending">Pending</option>
+    <option value="error">Error</option>
+    <option value="deleted">Deleted</option>
+  </select>
+</div>
+
+  <!-- TABLE -->
+  <div class="table-container">
+    <table id="downloadsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>URL</th>
+          <th>Filename</th>
+          <th>Created</th>
+          <th>Keep (hrs)</th>
+          <th>Expires</th>
+          <th>Status</th>
+          <th>Error</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in logs %}
+        <tr data-status="{{ r[7] }}">
+          <td>{{ r[0] }}</td>
+          <td class="url-cell" title="{{ r[1] }}">{{ r[1] }}</td>
+          <td>{{ r[2] }}</td>
+          <td>{{ r[4] }}</td>
+          <td>{{ r[5] }}</td>
+          <td>{{ r[6] or '' }}</td>
+          <td><span class="status {{ r[7] }}">{{ r[7] }}</span></td>
+          <td>{{ r[8] or '' }}</td>
+          <td>
+            {% if r[7] == 'ready' %}
+              <a href="/files/{{ r[0] }}" target="_blank" class="btn-action btn-download">Download</a>
+            {% elif r[7] == 'error' %}
+              <span class="btn-action btn-disabled">Error</span>
+            {% elif r[7] == 'deleted' %}
+              <span class="btn-action btn-disabled">Deleted</span>
+            {% else %}
+              <span class="btn-action btn-disabled">{{ r[7] }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="center">🚀 No downloads yet — start by pasting a link on the home page!</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const rows = document.querySelectorAll("#downloadsTable tbody tr");
+
+    // FILTER FUNCTION
+    function filterTable() {
+      const query = searchInput.value.toLowerCase();
+      const status = statusFilter.value;
+
+      let total = 0, active = 0, errors = 0, deleted = 0;
+
+      rows.forEach(row => {
+        const url = row.cells[1]?.innerText.toLowerCase() || "";
+        const filename = row.cells[2]?.innerText.toLowerCase() || "";
+        const rowStatus = row.getAttribute("data-status");
+
+        const matchesSearch = url.includes(query) || filename.includes(query);
+        const matchesStatus = (status === "all" || status === rowStatus);
+
+        if (matchesSearch && matchesStatus) {
+          row.style.display = "";
+          total++;
+          if (rowStatus === "ready" || rowStatus === "pending") active++;
+          if (rowStatus === "error") errors++;
+          if (rowStatus === "deleted") deleted++;
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      // Update summary
+      document.getElementById("totalCount").innerText = total;
+      document.getElementById("activeCount").innerText = active;
+      document.getElementById("errorCount").innerText = errors;
+      document.getElementById("deletedCount").innerText = deleted;
+    }
+
+    searchInput.addEventListener("input", filterTable);
+    statusFilter.addEventListener("change", filterTable);
+
+    // Initialize counts
+    filterTable();
+  </script>
+</body>
+</html>

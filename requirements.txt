@@ -1,0 +1,5 @@
+Flask>=2.2
+yt-dlp>=2024.12.17
+requests>=2.28
+beautifulsoup4>=4.12
+python-magic>=0.4.27
