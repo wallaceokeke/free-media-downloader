@@ -69,15 +69,6 @@ python app.py
 
 ---
 
-## 🖼️ Screenshots
-
-> 📌 *(Add screenshots of your dashboard & downloads page here for visual appeal!)*
-
-| Dashboard                          | Download Page                    | Auto-Clean                     |
-| ---------------------------------- | -------------------------------- | ------------------------------ |
-| ![Dashboard](assets/dashboard.png) | ![Download](assets/download.png) | ![Clean](assets/autoclean.png) |
-
----
 
 ## 🤝 Contributing
 
@@ -98,4 +89,3 @@ See the [LICENSE](LICENSE) file for details.
 
 
 
-Do you want me to also **design a logo banner (like a header image)** for your README so it looks startup-grade and visually stronger?
